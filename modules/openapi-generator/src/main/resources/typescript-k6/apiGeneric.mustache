@@ -1,0 +1,22 @@
+  {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}params?: RefinedParams<{{#isResponseBinary}}'binary'{{/isResponseBinary}}{{^isResponseBinary}}{{#isVoid}}'none'{{/isVoid}}{{^isVoid}}'text'{{/isVoid}}{{/isResponseBinary}}>): RefinedResponse<{{#isResponseBinary}}'binary'{{/isResponseBinary}}{{^isResponseBinary}}{{#isVoid}}'none'{{/isVoid}}{{^isVoid}}'text'{{/isVoid}}{{/isResponseBinary}}> {
+    const url = `${this.baseUrl}{{{path}}}`;
+    let queryParams = '';
+    {{#queryParams}}queryParams += {{paramName}} != null ? `{{#-first}}?{{/-first}}{{paramName}}=${ {{paramName}} }{{^-last}}&{{/-last}}` : '';{{/queryParams}}
+
+    {{#consumes.0}}const contentType = '{{mediaType}}' as string;{{/consumes.0}}
+    const headers = { {{#consumes.0}}'Content-Type': contentType{{/consumes.0}}{{#consumes.0}}{{#produces.0}}, {{/produces.0}}{{/consumes.0}}{{#produces.0}}'Accept': '{{mediaType}}'{{/produces.0}} };
+    const mergedParams = { ...params, headers: { ...params?.headers, ...headers } };
+
+    let payload = null;{{^formParams.0}}{{#bodyParams.0}}
+    if (contentType === 'application/json' && typeof {{paramName}} === 'object' && {{paramName}} != null) {
+      payload = JSON.stringify({{paramName}});
+    } else {
+      payload = {{paramName}}?.toString();
+    }{{/bodyParams.0}}{{/formParams.0}}
+    const response = this.request<{{#isResponseBinary}}'binary'{{/isResponseBinary}}{{^isResponseBinary}}{{#isVoid}}'none'{{/isVoid}}{{^isVoid}}'text'{{/isVoid}}{{/isResponseBinary}}>('{{httpMethod}}', `${url}${queryParams}`, payload, mergedParams);
+    {{#responses}}{{#is2xx}}
+    check(response, {
+      '{{message}}': res => res.status === {{code}}
+    });{{/is2xx}}{{/responses}}
+    return response;
+  }

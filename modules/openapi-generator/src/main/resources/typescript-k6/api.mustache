@@ -1,0 +1,45 @@
+{{>licenseInfo}}
+import { check } from 'k6';
+import http, { RefinedParams, RefinedResponse, RequestBody, ResponseType } from 'k6/http';
+
+{{#useJslib}}
+import { URL } from 'https://jslib.k6.io/url/1.0.0/index.js';
+import formUrlencode from 'https://jslib.k6.io/form-urlencoded/3.0.0/index.js';
+{{/useJslib}}
+
+{{#imports}}
+import { {{ classname }} } from '{{ filename }}';
+{{/imports}}
+
+{{#operations}}
+
+{{#description}}
+/**
+* {{&description}}
+*/
+{{/description}}
+export class {{classname}} {
+
+  constructor(protected readonly baseUrl: string) { }
+
+  protected request<T extends ResponseType | undefined>(method: string, url: string, body?: RequestBody | null, params?: RefinedParams<T>): RefinedResponse<T> {
+    return http.request(method, url, body, params);
+  }
+
+{{#operation}}
+  /**
+{{#summary}}
+   * {{.}}
+{{/summary}}
+{{#notes}}
+   * {{.}}
+{{/notes}}
+{{#allParams}}
+   * @param {{paramName}} {{description}}
+{{/allParams}}
+   */
+{{#useJslib}}{{>apiJslib}}{{/useJslib}}{{^useJslib}}{{>apiGeneric}}{{/useJslib}}
+{{/operation}}
+}
+
+{{/operations}}
